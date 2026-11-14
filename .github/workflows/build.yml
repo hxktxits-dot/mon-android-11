@@ -20,25 +20,24 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y git-core gnupg flex bison build-essential zip curl zlib1g-dev libc6-dev-i386 libncurses5 x11proto-core-dev libx11-dev lib32z1-dev libgl1-mesa-dev libxml2-utils xsltproc unzip fontconfig python3 repo
 
-      - name: 3. Télécharger Android 11 (Via Miroir Rapide)
+      - name: 3. Télécharger Android 11 (Serveur GitHub direct)
         run: |
           mkdir -p ~/android11 && cd ~/android11
           git config --global user.name "Builder"
           git config --global user.email "builder@github.com"
-          export REPO_URL='https://tsinghua.edu.cn'
-          repo init -u https://tsinghua.edu.cn -b android-11.0.0_r48 --depth=1
+          repo init -u https://github.com -b lineage-18.1 --depth=1 --git-lfs
           repo sync -c -j4 --no-tags --no-clone-bundle
 
       - name: 4. Appliquer tes modifications
         run: |
           cd ~/android11
-          sed -i 's/aosp_arm64/MonSuperOS/g' build/make/target/product/aosp_arm64.mk
+          sed -i 's/lineage/MonSuperOS/g' vendor/lineage/config/common.mk || true
 
       - name: 5. Compiler Android 11
         run: |
           cd ~/android11
           source build/envsetup.sh
-          lunch aosp_arm64-userdebug
+          lunch lineage_arm64-userdebug
           m -j$(nproc) systemimage
 
       - name: 6. Compresser le résultat
