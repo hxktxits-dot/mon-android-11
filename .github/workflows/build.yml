@@ -20,13 +20,14 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y git-core gnupg flex bison build-essential zip curl zlib1g-dev libc6-dev-i386 libncurses5 x11proto-core-dev libx11-dev lib32z1-dev libgl1-mesa-dev libxml2-utils xsltproc unzip fontconfig python3 repo
 
-      - name: 3. Télécharger Android 11
+      - name: 3. Télécharger Android 11 (Via Miroir Rapide)
         run: |
           mkdir -p ~/android11 && cd ~/android11
           git config --global user.name "Builder"
           git config --global user.email "builder@github.com"
-          repo init -u https://googlesource.com -b android-11.0.0_r48 --depth=1
-          repo sync -c -j$(nproc) --no-tags --no-clone-bundle
+          export REPO_URL='https://tsinghua.edu.cn'
+          repo init -u https://tsinghua.edu.cn -b android-11.0.0_r48 --depth=1
+          repo sync -c -j4 --no-tags --no-clone-bundle
 
       - name: 4. Appliquer tes modifications
         run: |
