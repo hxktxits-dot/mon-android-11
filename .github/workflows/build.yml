@@ -1,1 +1,56 @@
+name: Compiler Android 11
 
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+
+    steps:
+      - name: 1. Libérer de l'espace disque sur le serveur gratuit
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+          sudo docker image prune --all --force
+          df -h
+
+      - name: 2. Installer les outils de compilation Android
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git-core gnupg flex bison build-essential zip curl zlib1g-dev libc6-dev-i386 libncurses5 x11proto-core-dev libx11-dev lib32z1-dev libgl1-mesa-dev libxml2-utils xsltproc unzip fontconfig python3
+          mkdir -p ~/bin
+          curl https://googleapis.com > ~/bin/repo
+          chmod a+x ~/bin/repo
+
+      - name: 3. Télécharger Android 11 (Version allégée rapide)
+        run: |
+          mkdir -p ~/android11 && cd ~/android11
+          git config --global user.name "Builder"
+          git config --global user.email "builder@github.com"
+          python3 ~/bin/repo init -u https://googlesource.com -b android-11.0.0_r48 --depth=1
+          python3 ~/bin/repo sync -c -j$(nproc) --no-tags --no-clone-bundle
+
+      - name: 4. Appliquer tes modifications personnelles
+        run: |
+          cd ~/android11
+          sed -i 's/aosp_arm64/MonSuperOS/g' build/make/target/product/aosp_arm64.mk
+
+      - name: 5. Compiler l'OS Android 11
+        run: |
+          cd ~/android11
+          source build/envsetup.sh
+          lunch aosp_arm64-userdebug
+          m -j$(nproc) systemimage
+
+      - name: 6. Compresser et sauvegarder ton OS fini
+        run: |
+          cd ~/android11/out/target/product/generic_arm64
+          zip -r ~/Mon-Android-11.zip system.img
+
+      - name: 7. Publier le fichier sur ta page GitHub
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0
+          files: ~/Mon-Android-11.zip
