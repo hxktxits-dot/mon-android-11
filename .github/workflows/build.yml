@@ -26,7 +26,7 @@ jobs:
           git config --global user.name "Builder"
           git config --global user.email "builder@github.com"
           git config --global http.version HTTP/1.1
-          repo init -u https://googlesource.com -b android-11.0.0_r48 --depth=1 --repo-url=https://googlesource.com
+          repo init -u https://googlesource.com -b android-11.0.0_r48 --depth=1 --no-repo-verify
           repo sync -c -j2 --no-tags --no-clone-bundle
 
       - name: 4. Appliquer tes modifications
